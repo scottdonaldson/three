@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Three</title>
+
+    <style>
+        html, body { margin: 0; padding: 0; }
+        canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+        }
+    </style>
+
+    <script src="three/build/three.min.js"></script>
+    <!-- <script src="T.js"></script> -->
+</head>
+<body>
+    <div id="container"></div>
+    <script>
+
+        (function(){
+
+            var WIDTH = window.innerWidth,
+                HEIGHT = window.innerHeight;
+
+            var VIEW_ANGLE = 45,
+                ASPECT = WIDTH / HEIGHT,
+                NEAR = 0.1,
+                FAR = 10000;
+
+            var renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.shadowMapEnabled = true;
+
+            /* var camera = new THREE.PerspectiveCamera(
+                VIEW_ANGLE,
+                ASPECT,
+                NEAR,
+                FAR
+            ); */
+            var clock = new THREE.Clock;
+            var camera = new THREE.OrthographicCamera(
+                - WIDTH / 2,
+                WIDTH / 2,
+                HEIGHT / 2,
+                - HEIGHT / 2,
+                0.1, 10000
+            );
+
+            var radius = 500,
+                startHeight = 160,
+                maxHeight = 600,
+                heightIncreasing = true;
+
+            camera.position.y = startHeight;
+
+            var scene = new THREE.Scene;
+            scene.add(camera);
+
+            renderer.setSize(WIDTH, HEIGHT);
+
+            document.body.appendChild(renderer.domElement);
+
+            var cubeGeometry = new THREE.BoxGeometry(100, 100, 100),
+                cubeMaterial = new THREE.MeshLambertMaterial({
+                color: '#bbb'
+            }),
+                cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
+
+            cube.position.y = 20;
+            cube.rotation.y = Math.PI * 15 / 180;
+            cube.castShadow = true;
+
+            scene.add(cube);
+
+            camera.lookAt(cube.position);
+
+            var pedestalGeometry = new THREE.BoxGeometry(150, 20, 150),
+                pedestalMaterial = new THREE.MeshLambertMaterial({
+                    color: '#9b7'
+                }),
+                pedestal = new THREE.Mesh(pedestalGeometry, pedestalMaterial);
+
+            pedestal.receiveShadow = true;
+            pedestal.position.y = -40;
+            scene.add(pedestal);
+
+            var planeGeometry = new THREE.PlaneBufferGeometry(2000, 2000, 20 ),
+                planeMaterial = new THREE.MeshLambertMaterial({
+                    color: '#235',
+                    side: THREE.DoubleSide
+                }),
+                plane = new THREE.Mesh(planeGeometry, planeMaterial);
+
+            plane.receiveShadow = true;
+
+            plane.position.y = -50;
+            plane.rotation.x = Math.PI * 90 / 180;
+            // scene.add(plane);
+
+            var skyboxGeometry = new THREE.BoxGeometry(10000, 10000, 10000),
+            skyboxMaterial = new THREE.MeshBasicMaterial({ color: '#235', side: THREE.BackSide }),
+            skybox = new THREE.Mesh(skyboxGeometry, skyboxMaterial);
+
+            scene.add(skybox);
+
+            var light = new THREE.DirectionalLight('#fff');
+            light.position.set(200, 200, 100);
+            light.castShadow = true;
+            light.shadowDarkness = 0.15;
+            light.target = cube;
+            scene.add(light);
+
+            function render() {
+                renderer.render(scene, camera);
+
+                setXZ();
+
+                requestAnimationFrame(render);
+            }
+
+            function setXZ() {
+
+                var time = clock.getElapsedTime() * 10,
+                    x = radius * Math.sin( time * Math.PI / 180 ),
+                    z = radius * Math.cos( time * Math.PI / 180 );
+
+                if ( heightIncreasing && camera.position.y < maxHeight ) {
+                    camera.position.y++;
+                } else if ( heightIncreasing && camera.position.y === maxHeight) {
+                    heightIncreasing = false;
+                    camera.position.y--;
+                } else if ( !heightIncreasing && camera.position.y > startHeight ) {
+                    camera.position.y--;
+                } else {
+                    heightIncreasing = true;
+                    camera.position.y++;
+                }
+
+                camera.position.x = x;
+                camera.position.z = z;
+
+                camera.lookAt(cube.position);
+            }
+
+            render();
+
+        })();
+    </script>
+</body>
+</html>
