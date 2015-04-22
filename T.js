@@ -1,58 +1,34 @@
-(function() {
+function T() {
 
-// shortcut... confusing? oh well
-var t = THREE;
+}
 
-// T is opinionated!
-var WIDTH = window.innerWidth,
-    HEIGHT = window.innerHeight;
+T.box = function(x, y, z) {
+    return new THREE.BoxGeometry(x, y, z);
+};
 
-var VIEW_ANGLE = 45,
-    ASPECT = WIDTH / HEIGHT,
-    NEAR = 0.1,
-    FAR = 10000;
+T.material = function(type, attrs) {
 
-// thin wrapper
-window.T = {
-    renderer: new t.WebGLRenderer({ antialias: true }),
-    camera: new t.PerspectiveCamera(
-        VIEW_ANGLE,
-        ASPECT,
-        NEAR,
-        FAR
-    ),
-    scene: new t.Scene,
-    clock: new t.Clock,
-    box: function(sizeArr, posArr, color) {
+    var types = {
+        basic: 'MeshBasicMaterial',
+        lambert: 'MeshLambertMaterial'
+    };
 
-        var box = new t.Mesh(
-            new t.BoxGeometry(sizeArr[0], sizeArr[1], sizeArr[2]),
-            new t.MeshLambertMaterial({ color: color || '#999' })
-        );
-
-        box.position.x = posArr[0];
-        box.position.y = posArr[1];
-        box.position.z = posArr[2];
-
-        T.scene.add(box);
-
-        return box;
-    },
-    render: function(func) {
-        T.renderer.render(T.scene, T.camera);
-        //if ( !!func ) func();
-        requestAnimationFrame(T.render);
+    if (type in types) {
+        // include attributes
+        if ( typeof attrs === 'object' ) {
+            // default to white
+            if (!attrs.color) attrs.color = '#fff';
+            return new THREE[types[type]](attrs);
+        // or, if a string, then it's the color
+        } else if (typeof attrs === 'string') {
+            return new THREE[types[type]]({ color: attrs });
+        } else if ( !attrs ) {
+            attrs = { color: '#fff' };
+            return new THREE[types[type]](attrs);
+        }
     }
 };
 
-T.renderer.shadowMapEnabled = true;
-
-T.scene.add(T.camera);
-
-T.renderer.setSize(WIDTH, HEIGHT);
-
-window.addEventListener('DOMContentLoaded', function(){
-    document.body.appendChild(T.renderer.domElement);
-});
-
-})();
+T.mesh = function(geo, material) {
+    return new THREE.Mesh(geo, material);
+};
