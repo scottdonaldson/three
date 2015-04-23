@@ -10,9 +10,9 @@ T = function() {
         FAR = 100000;
 
     renderer = new THREE.WebGLRenderer({
-        antialias: true,
-        shadowMapEnabled: true
+        antialias: true
     });
+    renderer.shadowMapEnabled = true;
 
     camera = new THREE.PerspectiveCamera(
         VIEW_ANGLE,
@@ -44,7 +44,12 @@ function normalize(thing) {
     ['x', 'y', 'z'].forEach(function(d) {
         var a = d;
         thing[d] = function(n) {
-            this.position[a] = n;
+            if (n) {
+                this.position[a] = n;
+                return this;
+            } else {
+                return this.position[a];
+            }
         };
     });
     return thing;
@@ -52,12 +57,12 @@ function normalize(thing) {
 
 Box = function(x, y, z) {
     var box = new THREE.BoxGeometry(x, y, z);
-    return shadows(box);
+    return box;
 };
 
 Cylinder = function(rTop, rBottom, h, seg) {
     var cylinder = new THREE.CylinderGeometry(rTop, rBottom, h, seg);
-    return shadows(cylinder);
+    return cylinder;
 }
 
 Material = function(type, attrs) {
@@ -67,25 +72,36 @@ Material = function(type, attrs) {
         lambert: 'MeshLambertMaterial',
         depth: 'MeshDepthMaterial',
         phong: 'MeshPhongMaterial'
-    };
+    },
+    theType = 'lambert'; // default to Lambert
 
     if ( type in types ) {
         // include attributes
         if ( typeof attrs === 'object' && !attrs.color ) {
-            // attrs.color = '#fff';
+            attrs.color = '#fff';
         // or, if a string, then it's the color
         } else if (typeof attrs === 'string') {
             attrs = { color: attrs };
-        } else if ( !attrs ) {
-            attrs = { color: '#fff' };
         }
-
-        return new THREE[types[type]](attrs);
+        theType = type;
+    // if type is not one of the allowed materials, assume it's a color
+    } else if ( type === 'string' ) {
+        attrs = { color: type };
+    // default to white
+    } else {
+        attrs = { color: '#fff' };
     }
+
+    return new THREE[types[theType]](attrs);
 };
 
 T.prototype.mesh = function(geo, material) {
-    var mesh = new T.Mesh(geo, material, this);
+    if (!material) material = Material();
+    var mesh = new T.Mesh(geo, material, this),
+        height = geo.parameters.height;
+
+    // set base of mesh at xz plane
+    mesh.translateY(height / 2);
     return mesh;
 };
 
@@ -98,6 +114,7 @@ T.prototype.light = function() {
 
 T.Mesh = function(geo, material, world) {
     var mesh = new THREE.Mesh(geo, material);
+    mesh = shadows(mesh);
     world.scene.add(mesh);
     return normalize(mesh);
 };
