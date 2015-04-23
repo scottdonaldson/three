@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Three</title>
+
+    <style>
+        html, body { margin: 0; padding: 0; }
+        canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+        }
+    </style>
+
+    <script src="three/build/three.min.js"></script>
+    <script src="T.js"></script>
+</head>
+<body>
+    <div id="container"></div>
+    <script>
+
+        (function(){
+
+            var radius = 1000;
+
+            var world = new T(),
+                scene = world.scene,
+                camera = world.camera,
+                renderer = world.renderer;
+
+            camera.y(400);
+
+            var cubeGeometry = Box(100, 50, 100),
+                cubeMaterial = Material('phong'),
+                cube = world.mesh(cubeGeometry, cubeMaterial);
+
+            cube.x(30);
+            cube.y(70);
+            cube.rotation.y = Math.PI * 45 / 180;
+
+            camera.lookAt(cube.position);
+
+            var cylinderGeo = Cylinder(40, 40, 200, 40),
+                cylinderMaterial = Material('lambert', '#fe0'),
+                cylinder = world.mesh(cylinderGeo, cylinderMaterial);
+
+            cylinder.y(80);
+            scene.add(cylinder);
+
+            var pedestalGeometry = Box(150, 20, 150),
+                pedestalMaterial = Material('lambert', '#9b7'),
+                pedestal = world.mesh(pedestalGeometry, pedestalMaterial);
+
+            pedestal.y(-40);
+
+            var skyboxGeometry = Box(10000, 10000, 10000),
+            skyboxMaterial = Material('basic', { color: '#235', side: THREE.BackSide }),
+            skybox = world.mesh(skyboxGeometry, skyboxMaterial);
+
+            var light = world.light('#fff');
+            light.target = cube;
+            light.position.set(100, 100, 200);
+
+            world.render(function(t) {
+                camera.x(radius * Math.sin(t / 100));
+                camera.z(radius * Math.cos(t / 100));
+                camera.lookAt(cube.position);
+            });
+
+        })();
+    </script>
+</body>
+</html>
