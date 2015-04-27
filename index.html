@@ -33,20 +33,20 @@
             var renderer = new THREE.WebGLRenderer({ antialias: true });
             renderer.shadowMapEnabled = true;
 
-            /* var camera = new THREE.PerspectiveCamera(
+            var camera = new THREE.PerspectiveCamera(
                 VIEW_ANGLE,
                 ASPECT,
                 NEAR,
                 FAR
-            ); */
+            );
             var clock = new THREE.Clock;
-            var camera = new THREE.OrthographicCamera(
+            /* var camera = new THREE.OrthographicCamera(
                 - WIDTH / 2,
                 WIDTH / 2,
                 HEIGHT / 2,
                 - HEIGHT / 2,
                 0.1, 10000
-            );
+            ); */
 
             var radius = 500,
                 startHeight = 160,
@@ -64,7 +64,7 @@
 
             var cubeGeometry = new THREE.BoxGeometry(100, 100, 100),
                 cubeMaterial = new THREE.MeshLambertMaterial({
-                color: '#bbb'
+                color: '#fff'
             }),
                 cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
 
@@ -108,7 +108,7 @@
             var light = new THREE.DirectionalLight('#fff');
             light.position.set(200, 200, 100);
             light.castShadow = true;
-            light.shadowDarkness = 0.15;
+            //light.shadowDarkness = 0.15;
             light.target = cube;
             scene.add(light);
 

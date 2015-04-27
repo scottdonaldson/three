@@ -55,10 +55,15 @@ function normalize(thing) {
     return thing;
 };
 
+Shape = function() {
+    var shape = new THREE.Shape();
+    return shape;
+}
+
 Box = function(x, y, z) {
     var box = new THREE.BoxGeometry(x, y, z);
     return box;
-};
+}
 
 Cylinder = function(rTop, rBottom, h, seg) {
     var cylinder = new THREE.CylinderGeometry(rTop, rBottom, h, seg);
@@ -98,7 +103,21 @@ Material = function(type, attrs) {
 T.prototype.mesh = function(geo, material) {
     if (!material) material = Material();
     var mesh = new T.Mesh(geo, material, this),
+        height,
+        yVertices,
+        y,
+        highest, lowest;
+
+    if ( geo.parameters && geo.parameters.height ) {
         height = geo.parameters.height;
+    } else {
+        yVertices = geo.vertices.map(function(vertex) {
+            return vertex.y;
+        });
+        highest = Math.max.apply(null, yVertices);
+        lowest = Math.min.apply(null, yVertices);
+        height = highest - lowest;
+    }
 
     // set base of mesh at xz plane
     mesh.translateY(height / 2);
@@ -108,6 +127,7 @@ T.prototype.mesh = function(geo, material) {
 T.prototype.light = function() {
     var light = new THREE.DirectionalLight('#fff');
     light.castShadow = true;
+    light.shadowMapWidth = light.shadowMapHeight = 1024;
     this.scene.add(light);
     return normalize(light);
 };

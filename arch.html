@@ -22,22 +22,20 @@
 
         (function(){
 
-            var radius = 1000;
+            var radius = 800;
 
             var world = new T(),
-                scene = world.scene,
                 camera = world.camera,
-                renderer = world.renderer;
+                scene = world.scene;
 
-            camera.y(400);
+            camera.y(200);
 
             var cubeGeometry = Box(100, 50, 100),
-                cubeMaterial = Material('phong'),
+                cubeMaterial = Material(),
                 cube = world.mesh(cubeGeometry, cubeMaterial);
 
-            cube.x(30);
-            cube.y(70);
-            cube.rotation.y = Math.PI * 45 / 180;
+            cube.x(110);
+            cube.rotation.z = Math.PI * 35 / 180;
 
             camera.lookAt(cube.position);
 
@@ -45,27 +43,50 @@
                 cylinderMaterial = Material('lambert', '#fe0'),
                 cylinder = world.mesh(cylinderGeo, cylinderMaterial);
 
-            cylinder.y(80);
-            scene.add(cylinder);
+            cylinder.x(200);
 
             var pedestalGeometry = Box(150, 20, 150),
                 pedestalMaterial = Material('lambert', '#9b7'),
                 pedestal = world.mesh(pedestalGeometry, pedestalMaterial);
 
-            pedestal.y(-40);
+            function addShape( shape, extrudeSettings, color, x, y, z) {
+
+				var geometry = new THREE.ExtrudeGeometry( shape, extrudeSettings );
+				world.mesh( geometry );
+			}
+
+            var triangleShape = Shape();
+				triangleShape.moveTo(  300, 0 );
+				triangleShape.lineTo(  240, 0 );
+				triangleShape.lineTo( 270, 60 );
+
+            var extrudeSettings = { amount: 50, bevelEnabled: false };
+
+            var geo = new THREE.ShapeGeometry(triangleShape);
+            var triangle = world.mesh(geo, Material('lambert', { color: '#fe0', side: THREE.DoubleSide }));
+            triangle.position.x = triangle.position.y = triangle.position.z = 0;
+
+            addShape( triangleShape, extrudeSettings, '#88f' );
+
+
+            var planeGeometry = Box(600, 1, 600),
+                plane = world.mesh(planeGeometry);
+            plane.y(-1);
 
             var skyboxGeometry = Box(10000, 10000, 10000),
-            skyboxMaterial = Material('basic', { color: '#235', side: THREE.BackSide }),
+                skyboxMaterial = Material('basic', { color: '#235', side: THREE.BackSide }),
             skybox = world.mesh(skyboxGeometry, skyboxMaterial);
+            skybox.translateY(-5000);
 
             var light = world.light('#fff');
             light.target = cube;
-            light.position.set(100, 100, 200);
+            light.position.set(100, 250, 200);
 
             world.render(function(t) {
-                camera.x(radius * Math.sin(t / 100));
-                camera.z(radius * Math.cos(t / 100));
-                camera.lookAt(cube.position);
+
+                camera.x(radius * Math.sin(t / 150));
+                camera.z(radius * Math.cos(t / 150));
+                camera.lookAt(plane.position);
             });
 
         })();
